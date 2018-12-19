@@ -10,6 +10,7 @@ from flask import jsonify
 from urllib.parse import unquote
 
 app = Flask(__name__)
+app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 
 root = "saves"
 
@@ -35,6 +36,15 @@ def remove_empty_folders(dir):
             remove_empty_folders(full_path)
             if len(os.listdir(full_path)) == 0:
                 os.rmdir(full_path)
+
+def directory_structure_to_json(root):   
+    result = []
+    for item in os.listdir(root):
+        if os.path.isdir(os.path.join(root,item)):
+            result.append({item: directory_structure_to_json(os.path.join(root, item))})
+        if os.path.isfile(os.path.join(root,item)):
+            result.append(item)
+    return result
 
 @app.route('/saves/<directory>/<key>', methods = ['GET', 'POST', 'DELETE'])
 def saves(directory, key):
@@ -73,24 +83,10 @@ def saves(directory, key):
     finally:
         remove_empty_folders(root)
 
-
-def directory_structure_to_json(root):   
-
-    result = []
-
-    for item in os.listdir(root):
-        if os.path.isdir(os.path.join(root,item)):
-            result.append({item: directory_structure_to_json(os.path.join(root, item))})
-        if os.path.isfile(os.path.join(root,item)):
-            result.append(item)
-
-    return result
-
 @app.route('/saves', methods = ['GET'])
 def list():
     
     try:
-
         global root
         print(root)
         return jsonify(
@@ -102,4 +98,5 @@ def list():
         return handle_exception(e)
 
 if __name__ == "__main__":
+
     app.run(host='0.0.0.0',port=80)
