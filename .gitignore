@@ -103,6 +103,6 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-# saves dir
-saves
+# web dir
+web
 

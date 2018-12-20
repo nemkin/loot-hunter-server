@@ -12,7 +12,7 @@ from urllib.parse import unquote
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 
-root = "saves"
+root = "web"
 
 def dir_shall_exist(dir):
     try:
@@ -46,14 +46,14 @@ def directory_structure_to_json(root):
             result.append(item)
     return result
 
-@app.route('/saves/<directory>/<key>', methods = ['GET', 'POST', 'DELETE'])
-def saves(directory, key):
+@app.route('/<maindir>/<subdir>/<key>', methods = ['GET', 'POST', 'DELETE'])
+def saves(maindir, subdir, key):
 
     try:
         print(pprint.pformat(request.environ, depth=5), "\n", request.get_data())
 
         global root
-        path = os.path.join(root, directory)
+        path = os.path.join(root, maindir, subdir)
         dir_shall_exist(path)
         location = os.path.join(path,key)
         
@@ -83,15 +83,15 @@ def saves(directory, key):
     finally:
         remove_empty_folders(root)
 
-@app.route('/saves', methods = ['GET'])
-def list():
+@app.route('/<maindir>', methods = ['GET'])
+def list(maindir):
     
     try:
         global root
-        print(root)
+        path = os.path.join(root,maindir)
         return jsonify(
             success=True,
-            result=directory_structure_to_json(root)
+            result=directory_structure_to_json(path)
         )
 
     except Exception as e:
